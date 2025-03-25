@@ -5,9 +5,10 @@
 #include <QWidget>
 #include <QPainter>
 #include <QMouseEvent>
-#include <QPaintEvent><
+#include <QPaintEvent>
 #include <QElapsedTimer>
 #include <QLabel>
+#include <QTimer>
 class Player{
 public:
     double x = 0;
@@ -44,6 +45,7 @@ class MainGameDisplay : public QWidget
     Q_OBJECT
 public:
     MainGameDisplay();
+    QTimer *gameUpdateTimer;
     void paintEvent(QPaintEvent *event);
     void paintPlayer(QPainter &painter, Player &player);
     Player player1;
@@ -68,6 +70,9 @@ public:
     QLabel* fpsLabel;  // Optional: To display FPS on screen
 private :
     QSet<Qt::Key> pressedKeys;
+
+public slots:
+    void gameUpdateTimerSlot();
 
 
 

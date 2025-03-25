@@ -1,22 +1,24 @@
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
+#include <QtTypes>
+#pragma pack(push,1)
 
 struct STRUCT_PLAYER_HEADER {
-    int player_id;
-    int message_id;
-    int v1;
-    int v2;
-    int v3;
+    quint8 player_id;
+    quint8 message_id;
+    quint8 v1;
+    quint8 v2;
+    quint8 v3;
 };
 
 struct STRUCT_SERVER_HEADER {
-    int server_id;
-    int message_id;
+    quint8 server_id;
+    quint8 message_id;
 };
 
 struct STRUCT_PLAYER_POSITION_INFO{
-    double x;
-    double y;
+    qreal x;
+    qreal y;
 };
 
 struct STRUCT_ONE_PLAYER_POSITION_INFO{
@@ -42,5 +44,5 @@ struct S_P_POSITION_MESSAGE {
     STRUCT_ALL_PLAYER_POSITION_INFO players_pos_info;
 };
 
-
+#pragma pack(pop)
 #endif // STRUCTURES_H

@@ -3,7 +3,9 @@
 
 #include <QObject>
 #include "structures.h"
-
+#include <QList>
+#include <QByteArray>
+#include <QMutex>
 class DataStore : public QObject
 {
     Q_OBJECT
@@ -19,8 +21,8 @@ public:
     DataStore(const DataStore&) = delete;
     DataStore& operator=(const DataStore&) = delete;
     STRUCT_ALL_PLAYER_POSITION_INFO allPlayerPosition;
-
-
+    QList<QByteArray> recvByteArrayList;
+    QMutex serverMutex;
 private:
     // Private constructor to prevent external instantiation
     DataStore();

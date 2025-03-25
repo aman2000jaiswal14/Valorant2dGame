@@ -1,6 +1,7 @@
 #include "maingamedisplay.h"
 #include <QDebug>
 #include <QtMath>
+#include "communicationchannel.h"
 MainGameDisplay::MainGameDisplay() {
 
     player2.x = this->width()/2;
@@ -31,6 +32,13 @@ MainGameDisplay::MainGameDisplay() {
     // Set the label to resize automatically based on its content
     fpsLabel->adjustSize();  // Make sure the label fits the content
     fpsLabel->show();
+
+
+    gameUpdateTimer = new QTimer;
+    gameUpdateTimer->setInterval(100);
+
+    connect(gameUpdateTimer,&QTimer::timeout,this,&MainGameDisplay::gameUpdateTimerSlot);
+    gameUpdateTimer->start();
 }
 
 void MainGameDisplay::paintEvent(QPaintEvent *event)
@@ -56,7 +64,7 @@ void MainGameDisplay::paintEvent(QPaintEvent *event)
 
     paintPlayer(painter,currentPlayer);
     paintPlayer(painter,player1);
-    updatePlayerPosition();
+
     // ###############################
 
 
@@ -67,7 +75,7 @@ void MainGameDisplay::paintEvent(QPaintEvent *event)
     }
 
     // Update player position based on key presses
-    updatePlayerPosition();
+    // updatePlayerPosition();
 
     // Update bullet positions and remove bullets that go out of range
     for (int i = 0; i < bullets.size(); ++i) {
@@ -103,6 +111,7 @@ void MainGameDisplay::keyPressEvent(QKeyEvent *event)
 {
     // Add the key to the pressed keys set
     pressedKeys.insert(static_cast<Qt::Key>(event->key()));
+    updatePlayerPosition();
 }
 
 void MainGameDisplay::keyReleaseEvent(QKeyEvent *event)
@@ -113,7 +122,7 @@ void MainGameDisplay::keyReleaseEvent(QKeyEvent *event)
 
 void MainGameDisplay::updatePlayerPosition()
 {
-    double moveSpeed = 0.1;  // Movement speed
+    double moveSpeed = 10;  // Movement speed
 
     double moveX = 0;
     double moveY = 0;
@@ -144,7 +153,11 @@ void MainGameDisplay::updatePlayerPosition()
     currentPlayer.y += moveY * moveSpeed;
 
     // Trigger a repaint
-    update();
+    STRUCT_PLAYER_POSITION_INFO playerPos;
+    playerPos.x = currentPlayer.x;
+    playerPos.y = currentPlayer.y;
+    CommunicationChannel::instance().updateCurrentPlayerPosition(playerPos);
+    // update();
 }
 void MainGameDisplay::mouseMoveEvent(QMouseEvent *event)
 {
@@ -162,7 +175,7 @@ void MainGameDisplay::mouseMoveEvent(QMouseEvent *event)
     currentPlayer.headAngle = std::atan2(deltaY, deltaX) * 180.0 / M_PI; // Convert radians to degrees
 
     // Repaint the widget to show the new angle
-    update();
+    // update();
 }
 void MainGameDisplay::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
@@ -193,4 +206,18 @@ void MainGameDisplay::updateFPS() {
 
     // Ensure the label resizes to fit the new text content
     fpsLabel->adjustSize();
+}
+
+void MainGameDisplay::gameUpdateTimerSlot()
+{
+    for( int i=0;i<6;i++ )
+    {
+        STRUCT_ONE_PLAYER_POSITION_INFO player = CommunicationChannel::instance().allPlayerPosition.players[i];
+        if(player.player_id==1){
+            currentPlayer.x = player.pos_info.x;
+            currentPlayer.y = player.pos_info.y;
+            // qDebug()<<"position updated";
+        }
+    }
+    update();
 }

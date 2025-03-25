@@ -2,18 +2,19 @@
 #define COMMUNICATIONCHANNEL_H
 #include "structures.h"
 #include "MessageId.h"
-
+#include <QObject>
 class WebSocketClient;
 class structures;
-class CommunicationChannel
+class CommunicationChannel : public QObject
 {
+    Q_OBJECT
 public:
     static CommunicationChannel& instance()
     {
         static CommunicationChannel instance;
         return instance;
     }
-    void updatePlayerPosition(STRUCT_PLAYER_POSITION_INFO pos_info);
+    void updateCurrentPlayerPosition(STRUCT_PLAYER_POSITION_INFO pos_info);
 
 private:
     WebSocketClient *webSocketClient;
@@ -28,7 +29,12 @@ private:
     ~CommunicationChannel() {
         delete webSocketClient;
     }
+public slots:
+    void updatePlayerPositionSlot(STRUCT_ALL_PLAYER_POSITION_INFO players_pos_info);
 
+
+public:
+    STRUCT_ALL_PLAYER_POSITION_INFO allPlayerPosition;
 
 
 };

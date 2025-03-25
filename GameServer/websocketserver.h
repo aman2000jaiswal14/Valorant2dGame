@@ -11,6 +11,63 @@
 #include "structures.h"
 #include "datastore.h"
 #include "MessageId.h"
+#include <QThread>
+#include <QMutex>
+
+class ServerHandler : public QObject{
+    Q_OBJECT
+public:
+
+    ServerHandler(QWebSocket *socket, QObject *parent=nullptr) : QObject(parent),m_webSocket(socket){
+
+        connect(m_webSocket,&QWebSocket::binaryMessageReceived,this,&ServerHandler::onBinaryMessageReceivedOnServer);
+        connect(m_webSocket,&QWebSocket::textMessageReceived,this,&ServerHandler::onTextMessageReceivedOnServer);
+        connect(m_webSocket,&QWebSocket::disconnected,this,&ServerHandler::onDisconnected);
+    }
+
+public slots:
+    void onTextMessageReceivedOnServer(const QString message);
+    void onBinaryMessageReceivedOnServer(const QByteArray &message);
+    void onDisconnected();
+
+signals:
+    void disconnected(ServerHandler *);
+    void finished(QThread *,QWebSocket *);
+private:
+    QWebSocket *m_webSocket;
+
+};
+
+class WebSocketServer: public QObject
+{
+    Q_OBJECT
+public:
+    WebSocketServer(quint16 port);
+    void startListening();
+    void sendMessageToAllClient(const QByteArray &message);
+    void sendTextMessageToAllClient(const QString message);
+    void sendPositionToAllClients(const S_P_POSITION_MESSAGE &message);
+signals:
+    void sendServerDataToMediator(QByteArray);
+
+private slots:
+    void onNewConnection();
+
+
+
+public slots:
+    void onClientDisconnect(ServerHandler *serverHandler);
+    void onClientFinish(QThread *thread,QWebSocket *m_webSocket);
+
+private:
+    quint16 _port;
+    quint8 MAX_NO_OF_CLIENT=100;
+    QWebSocketServer *_server;
+    QList<QWebSocket *> client_list;
+
+};
+
+/*
 class WebSocketServer : public QWebSocketServer {
     Q_OBJECT
 
@@ -65,6 +122,7 @@ private slots:
     }
 
     void onBinaryMessageReceived(const QByteArray &message) {
+        qDebug()<<"msg recv ";
         emit processMessagesSignal(message);
     }
 
@@ -78,24 +136,13 @@ private slots:
     }
 
 public:
-    void sendPositionToAllClients(const S_P_POSITION_MESSAGE &message) {
 
 
-        // Send the message to all clients
-        char buffer[sizeof(message)];
-        memcpy(buffer,&message,sizeof(message));
-        QByteArray data(buffer,sizeof(message));
-        for (QWebSocket *client : clients) {
-            client->sendBinaryMessage(data);
-        }
-    }
 
-signals:
-    void processMessagesSignal(QByteArray message);
 
 private:
     QList<QWebSocket *> clients; // Stores connected clients
     const int maxClients; // Maximum number of clients allowed
 };
-
+*/
 #endif // WEBSOCKETSERVER_H

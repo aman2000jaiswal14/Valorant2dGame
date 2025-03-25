@@ -6,6 +6,7 @@
 #include "MessageId.h"
 #include "structures.h"
 #include <QTimer>
+
 class WebSocketServer; // Forward declaration of WebSocketServer class
 
 class CommunicationChannel : public QObject  // Ensure the class derives from QObject
@@ -33,11 +34,14 @@ private:
 
     WebSocketServer* webSocketServer;  // The WebSocketServer instance (assumed to be a pointer)
     QTimer *positionTimer;
+    QTimer *processMessagesTimer;
+    QList<QByteArray> recvByteArrayListCopy;
 public slots:
     void processMessagesSlot(QByteArray message);
 
 
     void positionTimeOutSlot();
+    void processMessageTimeOutSlot();
 };
 
 
